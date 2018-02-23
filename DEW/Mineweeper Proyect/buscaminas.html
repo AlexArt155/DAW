@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Buscaminas</title>
+<style type="text/css">
+	/*Body Style*/
+	body{
+		box-sizing: border-box;
+		position: relative;
+		background-color: #F1ECEA;
+	}
+	/*Board Style*/
+	.game{
+		position: relative;
+		box-sizing: border-box;
+	}
+
+	.board{
+				width: 520px;
+				height: 520px;								
+				border: 1px solid black;
+				margin-left: 33%;
+								
+			}
+
+			.board div{
+				width: 50px;
+				height: 50px;
+				border: 1px solid black;
+				float: left;
+				background-color: #3EC6F9;				
+				font-size: 30;	
+				text-align: center;
+			}
+/*
+			#resetGame{
+				
+
+			}*/
+			/*Head Styles*/
+			#head{
+				box-sizing: border-box;
+				position: relative;
+				width: 560px;
+				height: 50px;
+				margin-top: 100px;
+				margin-left: 33%;
+
+
+			}
+			/*Title div Styles*/
+			#title{
+				position: absolute;
+				font-size: 12px;
+				font-weight: bold;
+				font-style: oblique;
+				width: 260px;
+				height: 50px;
+				border: solid black 1px;
+				text-align: center;
+				background-color: #F9713E;
+
+				
+			}
+			/*Counter Styles */
+			#counter{
+				position: absolute;
+				width: 260px;
+				height: 50px;
+				font-size: 25px;
+				line-height: 2;
+				border: solid black 1px;
+				margin-left: 260px;
+				text-align: center;
+				background-color:  #F9713E;
+
+			}
+			/*Reset div Styles*/
+			#resetGame{
+				width: 520px;
+				height: 50px;
+				border: solid black 1px;
+				margin-left: 33%;
+				background-color: #F12020;
+				text-align: center;
+				font-size: 40px;
+
+			}
+			#resetGame:hover{
+				background-color: #F9713E;
+				border-color: red;
+				border:solid 2px;
+			}
+			
+			
+</style>
+
+</head>
+<!-- Load the game with the onload function-->
+<body onload="startTable();">
+<div id="head">
+<!-- div with the table of the game-->
+<div id="title"><h1>MineWeeper</h1></div>	
+<!-- Game Counter -->
+<div id="counter"></div>
+</div>
+<div id="game">
+<div id="gameBoard" class="board"></div>
+<!--<input type="button" id="resetGame" value="Reset Game" onclick="javascript:window.location.reload();">-->
+<div id="resetGame" onClick="javascript:window.location.reload();">Reset Game</div>
+</div>
+<script type="text/javascript">
+//Timer function
+var minutes = 0;
+var seconds = 0;
+var l = document.getElementById("counter");
+window.setInterval(function(){
+	l.innerHTML = "Time : " + minutes + " : " + seconds + " s";
+	seconds++;
+	if(seconds == 60){
+		minutes ++;
+		seconds = 0;
+	}
+},1000);	
+//Bombs variable
+var bombs = initializeArray();
+/*-----Function to create the array that will have the "bombs"-----
+	This function create the array that will contain the "bombs" */
+
+	function initializeArray(){
+		var table = [];
+		for(var i = 0;i<10;i++){
+			table[i] = [0,0,0,0,0,0,0,0,0,0];
+		}
+		return table;
+	}
+	//Creation of the board dimensions
+	function boardCreation(){
+		for (var i = 0; i<10;i++) {
+			for(var j = 0;j<10;j++){
+				var div = document.createElement("div");
+				div.id = i+""+j;
+				div.addEventListener("click",showNumber, true);
+				gameBoard.appendChild(div);
+			}
+
+		}
+	}
+
+//Bomb generation, this function will put the bombs into the boxes
+function bombGeneration(table){
+	var row = 0;
+	var col = 0;
+
+	row = Math.floor((Math.random()*9)+0);
+	col = Math.floor((Math.random()*9)+0);
+	for(var i = 0; i < 10; i++){
+		while (table[row][col] == "*"){
+			row = Math.floor((Math.random()*9)+0);
+			col = Math.floor((Math.random()*9)+0);
+		}
+		table[row][col] = "*";			
+	}
+}
+
+/*------Determinate the bombs situation----------
+	This function will set the coordinates of each bomb */
+
+function bombsArround(table){
+	for(var i = 0; i < 10; i++){
+		for(var j = 0; j < 10; j++){			           
+			if(table[i][j] == "*"){
+			    if(i == 0 && j == 0){
+			        putBombNumber(i, j, i + 1, j + 1,table);
+			    }
+			    else if (i == 0 && (j > 0 && j < 9)) {
+			        putBombNumber(i, j - 1, i + 1, j + 1,table);
+			    }
+			    else if(i == 0 && j == 9){
+			        putBombNumber(i, j - 1, i + 1, j,table);
+			    }
+			    else if(j == 9 && (i > 0 && i < 9)){
+			        putBombNumber(i - 1, j - 1, i + 1, j,table);
+			    }
+			    else if(i == 9 && j == 9){
+			        putBombNumber(i - 1, j - 1, i, j,table);
+			    }
+			    else if(i == 9 && (j > 0 && j < 9)){
+			        putBombNumber(i - 1, j - 1, i, j + 1,table);
+			    }
+			    else if(i == 9 && j == 0){
+			        putBombNumber(i - 1, j, i, j + 1,table);
+			    }
+			    else if(j == 0 && (i > 0 && i < 9)){
+			        putBombNumber(i - 1, j, i + 1, j + 1,table);
+			    }else{
+			        putBombNumber(i - 1, j - 1, i + 1, j + 1,table);
+			    }
+			}
+		}
+	}
+}
+
+/*Put the number of the situation of each bomb
+	This function will determinate the coordinates of each bomb
+	that is set on the previous function
+*/
+function putBombNumber(vari,varj,fini,finj,table){
+	for(var i = vari; i <= fini; i++){
+		for(var j = varj; j <= finj; j++){			           
+			if(table[i][j] != "*"){
+			    table[i][j] = (parseInt(table[i][j])+1);		           		
+			}
+		}
+	}
+}
+
+
+/*Expand the table
+  Function to open the boxes that are far to a bomb
+*/
+function openSurrounding(xi,xj,table){
+	if(xi == 0 && xj == 0){
+		open0(xi, xj, xi + 1, xj + 1, xi, xj,table);
+	}
+	else if(xi == 0 && (xj > 0 && xj < 9)){
+		open0(xi, xj - 1, xi + 1, xj + 1, xi, xj,table);
+	}
+	else if(xi == 0 && xj == 9){
+		open0(xi, xj - 1, xi + 1, xj, xi, xj,table);
+	}
+	else if(xj == 9 && (xi > 0 && xi < 9)){
+		open0(xi - 1, xj - 1, xi + 1, xj, xi, xj,table);
+	}
+	else if(xi == 9 && xj == 9){
+		open0(xi - 1, xj - 1, xi, xj, xi, xj,table);
+	}
+	else if(xi == 9 && (xj > 0 && xj < 9)){
+		open0(xi - 1, xj - 1, xi, xj + 1, xi, xj,table);
+	}
+	else if(xi == 9 && xj == 0){
+		open0(xi - 1, xj, xi, xj + 1, xi, xj,table);
+	}
+	else if(xj == 0 && (xi > 0 && xi < 9)){
+		open0(xi - 1, xj, xi + 1, xj + 1, xi, xj,table);
+	}else{
+		open0(xi - 1, xj - 1, xi + 1, xj + 1, xi, xj,table);
+	}
+} 
+/*This function open the boxes if these boxes doesn't have
+  a bomb inside. For this, this function gets the coordinates for
+  the previous function to compare with the bombs positions
+
+*/
+function open0(vari,varj,fini,finj,cori,corj,table){
+	for(var i = vari; i <= fini; i++){
+		for(var j = varj; j <= finj; j++){		
+			var myid = i+""+j;
+			var objDiv =  document.getElementById(myid)	           
+			if(objDiv.textContent == ""){			           		
+			    if(table[i][j] == 0){			           			
+			        if(i == cori && j == corj){			           				
+			           	objDiv.textContent = ""	; 
+			           	objDiv.style.backgroundColor = "white";	          				
+			        }else{
+			           	if(objDiv.style.backgroundColor != "white"){
+			           		openSurrounding(i, j,table);
+			           	}			           				
+			        }
+
+			    }else{
+			        if(table[i][j] != "*"){
+			           	document.getElementById(myid).innerHTML = "<p style='margin-top:15px;'>" + table[i][j] + "</p>"; 
+			           	objDiv.style.backgroundColor = "white";	
+			        }
+			    }			           			           		
+			}			           
+		}
+	}
+}
+
+/*Show Number is the function that will show the number
+  of bombs near to the box selected and put the styles in each box*/
+
+function showNumber(e){
+	var auxstr = this.id.split("");				
+	var myid = auxstr[0] + auxstr[1];			
+	divObj = document.getElementById(myid);
+
+	if(bombs[parseInt(auxstr[0],10)][parseInt(auxstr[1],10)] == 0){
+		divObj.style.backgroundColor = "white";					
+		openSurrounding(parseInt(auxstr[0],10),parseInt(auxstr[1],10),bombs);
+	}else{
+		if(bombs[parseInt(auxstr[0],10)][parseInt(auxstr[1],10)] != "*"){
+			document.getElementById(myid).innerHTML = "<p style='margin-top:15px;'>" + bombs[parseInt(auxstr[0],10)][parseInt(auxstr[1],10)] + "</p>";
+			divObj.style.backgroundColor = "white";
+		}else{
+			divObj.style.backgroundImage = "url('mine.png')";						
+			openTable(bombs);
+			alert("GAME OVER");
+		}
+	}						
+}		
+
+function openTable(table){
+	for(var i = 0; i < 10; i++){
+		for(var j = 0; j < 10; j++){	
+			var myid = i+""+j;
+			var objDiv =  document.getElementById(myid);		           
+			if(table[i][j] == "*"){			        		
+			    objDiv.style.backgroundColor = "red";
+			    objDiv.style.backgroundImage = "url('mine.png')";
+
+			}
+		}
+	}
+}		
+
+/*-----Start the game-----
+	This function is the responsable to
+	set up the game */
+function startTable(){
+	boardCreation();
+	bombGeneration(bombs);
+	bombsArround(bombs);
+}
+</script>
+</body>
+</html>
